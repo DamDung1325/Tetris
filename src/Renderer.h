@@ -1,53 +1,78 @@
+/*
+ * Renderer.h
+ * ----------
+ * Lớp Renderer — vẽ toàn bộ giao diện game bằng SDL3 primitives + SDL3_ttf.
+ * Không dùng ảnh nền — mọi thứ được vẽ bằng code với phong cách pixel/neon.
+ */
+
 #ifndef RENDERER_H
 #define RENDERER_H
 
-#include <SDL3/SDL.h>
 #include "GameState.h"
+#include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
+#include <string>
+#include <vector>
 
-// Forward declaration — tránh circular include
 class Board;
 class Tetromino;
 
 class Renderer {
-    private:
-        SDL_Renderer* sdlRenderer;
-    public:
-        Renderer(SDL_Renderer* renderer);
-        ~Renderer();
+private:
+    SDL_Renderer* sdlRenderer;
 
-        // Hàm vẽ từng thành phần
-        // Xóa màn hình, chuẩn bị frame mới
-        void clear();
+    // ── Fonts (pixel style) ──────────────────────────────────────────
+    TTF_Font* fontLarge;   // 32px — tiêu đề
+    TTF_Font* fontMedium;  // 20px — nút, label
+    TTF_Font* fontSmall;   // 14px — mô tả, giá trị
 
-        // Hiển thị frame lên màn hình
-        void present();
+    // ── Highscore ────────────────────────────────────────────────────
+    std::vector<int> highscores;
+    bool highscoresLoaded;
+    void loadHighscores();
 
-        // Vẽ board (các ô đã bị lock)
-        void drawBoard(const Board& board);
+    // ── Tiện ích vẽ ──────────────────────────────────────────────────
+    void renderText(TTF_Font* f, const char* text, int x, int y, SDL_Color color);
+    void renderTextCentered(TTF_Font* f, const char* text, int cx, int cy, SDL_Color color);
+    SDL_Color getTetrominoColor(TetrominoType type);
 
-        // Vẽ mảnh đang rơi
-        void drawTetromino(const Tetromino& tetromino);
+    // Tính chiều rộng text (dùng cho layout)
+    int getTextWidth(TTF_Font* f, const char* text);
 
-        // Vẽ ghost piece (bóng mờ)
-        void drawGhostPiece(const Tetromino& tetromino, int ghostY);
+public:
+    Renderer(SDL_Renderer* renderer);
+    ~Renderer();
 
-        // Vẽ mảnh tiếp theo ở panel bên phải
-        void drawNextPiece(const Tetromino& nextPiece);
+    // ── Frame lifecycle ──────────────────────────────────────────────
+    void clear();
+    void present();
 
-        // Hàm vẽ UI (điểm số, level)
-        // Vẽ toàn bộ UI: score, level, lines
-        void drawUI(int score, int level, int lines);
+    // ── UI Primitives ────────────────────────────────────────────────
+    void drawBlock3D(float x, float y, float size, SDL_Color color);
+    void drawPanel(float x, float y, float w, float h,
+                   SDL_Color bg, SDL_Color border);
+    void drawButton(const char* text, SDL_FRect rect, bool hovered,
+                    SDL_Color accent = {233, 69, 96, 255});
 
-        // Vẽ màn hình theo state hiện tại
-        void drawScreen(GameState state);
-        /*Nhận vào GameState — tự biết vẽ màn hình nào
-        MENU → vẽ main menu
-        PAUSED → vẽ overlay pause
-        GAME_OVER → vẽ màn hình game over*/
+    // ── Screens ──────────────────────────────────────────────────────
+    void drawMenuScreen(int hoveredBtn, float animTime);
+    void drawLevelSelectScreen(int selectedLevel, int hoveredLevel);
+    void drawSettingsScreen(float bgmVol, float sfxVol, bool bgmOn, bool sfxOn,
+                            int hoveredItem, int editingKey,
+                            const char* keyNames[7]);
+    void drawTutorialScreen(const char* keyNames[7], bool backHovered = false);
+    void drawPauseOverlay();
+    void drawGameOverScreen(int score, int level, int lines);
 
-        // Hàm animation
-        // Flash các dòng trước khi xóa
-        void drawLineClearEffect(const Board& board, int clearedRows[], int count);
+    // ── Game components ──────────────────────────────────────────────
+    void drawGameBackground(int currentLevel);
+    void drawBoard(const Board& board);
+    void drawTetromino(const Tetromino& tetromino);
+    void drawGhostPiece(const Tetromino& tetromino, int ghostY);
+    void drawNextPiece(const Tetromino& nextPiece);
+    void drawHeldPiece(const Tetromino& heldPiece);
+    void drawUI(int score, int level, int lines);
+    void drawLineClearEffect(const Board& board, int clearedRows[], int count);
 };
 
 #endif

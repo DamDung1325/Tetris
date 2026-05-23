@@ -1,0 +1,226 @@
+# 🕹️ TETRIS C++ & SDL3
+
+<div align="center">
+  
+  [![Language](https://img.shields.io/badge/Language-C%2B%2B17-blue.svg?style=for-the-badge&logo=c%2B%2B)](https://en.cppreference.com/)
+  [![Framework](https://img.shields.io/badge/Library-SDL3-red.svg?style=for-the-badge&logo=sdl)](https://www.libsdl.org/)
+  [![Compiler](https://img.shields.io/badge/Compiler-MinGW--w64%20%2F%20GCC-orange.svg?style=for-the-badge&logo=gnu)](https://www.mingw-w64.org/)
+  [![Platform](https://img.shields.io/badge/Platform-Windows-0078D6.svg?style=for-the-badge&logo=windows)](https://www.microsoft.com/windows)
+  
+</div>
+
+---
+
+**Tetris C++ SDL3** là một dự án game xếp hình Tetris cổ điển kết hợp các cơ chế hiện đại, được xây dựng hoàn toàn bằng ngôn ngữ **C++** và thư viện đồ họa thế hệ mới **SDL3**. Dự án được thiết kế tỉ mỉ từ phần đồ họa retro bắt mắt, hiệu ứng âm thanh phong phú cho đến thuật toán xoay khối **SRS (Super Rotation System)** mượt mà chuẩn giải đấu.
+
+Dự án được xây dựng với kiến trúc tối giản nhưng đầy đủ tính năng cấu hình mạnh mẽ, lý tưởng cho việc học tập lập trình game 2D, lập trình hướng đối tượng bằng C++ và sử dụng hệ sinh thái thư viện SDL3.
+
+---
+
+## 📌 Mục Lục
+1. [Tính Năng Nổi Bật](#-tính-năng-nổi-bật)
+2. [Công Nghệ Sử Dụng](#-công-nghệ-sử-dụng)
+3. [Cấu Trúc Thư Mục](#-cấu-trúc-thư-mục)
+4. [Yêu Cầu Hệ Thống](#-yêu-cầu-hệ-thống)
+5. [Hướng Dẫn Cài Đặt & Chạy Nhanh](#-hướng-dẫn-cài-đặt--chạy-nhanh)
+6. [Hướng Dẫn Build Từ Nguồn](#-hướng-dẫn-build-từ-nguồn)
+7. [Phím Điều Khiển](#-phím-điều-khiển)
+8. [Cơ Chế Tính Điểm & Level](#-cơ-chế-tính-điểm--level)
+9. [Chi Tiết Kỹ Thuật (SRS Wall Kick)](#-chi-tiết-kỹ-thuật-srs-wall-kick)
+10. [Xử Lý Sự Cố & Ghi Chú](#-xử-lý-sự-cố--ghi-chú)
+11. [Giấy Phép](#-giấy-phép)
+
+---
+
+## 🌟 Tính Năng Nổi Bật
+
+*   **🕹️ Lối chơi Tetris cổ điển:** Đầy đủ 7 loại mảnh ghép Tetromino đặc trưng (I, O, T, S, Z, J, L) với màu sắc neon rực rỡ và hiệu ứng vẽ lưới tinh tế.
+*   **💡 Ghost Piece (Khối bóng):** Hỗ trợ hiển thị trước vị trí rơi thấp nhất của mảnh ghép dưới dạng bóng mờ, giúp game thủ định vị và thả khối gạch cực kỳ nhanh và chính xác.
+*   **📥 Hold Piece (Giữ khối):** Cho phép người chơi tạm cất giữ một mảnh gạch khó bằng phím `C` và hoán đổi ra sử dụng bất cứ lúc nào khi cần thiết.
+*   **🔄 SRS Wall Kick (Xoay khối thông minh):** Tích hợp thuật toán **Super Rotation System** chuẩn thi đấu quốc tế. Giúp xoay khối sát tường, sát các mảnh khác mà không bị cấm xoay, cho phép thực hiện các kỹ năng nâng cao (như xoay lách gạch, T-Spin).
+*   **🔊 Âm Thanh Sống Động:** Nhạc nền (BGM) retro huyền thoại phối khí cuốn hút cùng hiệu ứng âm thanh phong phú (SFX khi di chuyển, xoay, chạm đất, xóa 1-4 hàng, game over).
+*   **⚙️ Tùy Biến Trực Quan (Settings Screen):** Tích hợp màn hình cấu hình âm lượng nhạc nền/hiệu ứng âm thanh và **cho phép tùy biến (Rebind) phím điều khiển** 100% theo thói quen của riêng bạn.
+*   **🏆 Bảng Điểm Cao (High Score):** Xếp hạng điểm số trực tiếp ngay trên màn hình Game Over và tự động lưu/tải top 5 điểm kỷ lục vào file `highscores.txt`.
+*   **⚡ 3 Chế Độ Thử Thách:** Lựa chọn cấp độ bắt đầu đa dạng (EASY, NORMAL, HARD) tương ứng với tốc độ rơi và giao diện màu sắc chủ đề khác nhau.
+
+---
+
+## 🛠️ Công Nghệ Sử Dụng
+
+Dự án tận dụng các công nghệ C++ hiện đại và bộ thư viện đồ họa đa nền tảng thế hệ mới:
+
+*   **Ngôn ngữ:** `C++17` (hỗ trợ `constexpr`, cấu trúc điều khiển thông minh).
+*   **Framework chính:** `SDL3` (Simple DirectMedia Layer 3) - Sử dụng công nghệ xử lý đồ họa phần cứng (Hardware Accelerated) mượt mà và tiết kiệm tài nguyên.
+*   **Tiện ích đi kèm:**
+    *   `SDL3_image` - Hỗ trợ nạp và giải mã tài nguyên hình ảnh.
+    *   `SDL3_ttf` - Hỗ trợ dựng phông chữ TrueType pixel nghệ thuật sắc nét.
+    *   `SDL3_mixer` - Bộ mixer âm thanh đa kênh hỗ trợ nhạc nền vòng lặp và trộn âm thanh sự kiện.
+*   **Biên dịch & Build:** `GCC / G++ (MinGW-w64)` và hệ thống tự động hóa `GNU Make`.
+
+---
+
+## 📂 Cấu Trúc Thư Mục
+
+Cơ cấu thư mục được tổ chức chuẩn hóa, phân tách rõ ràng giữa mã nguồn, file header, tài nguyên tĩnh và các thư viện liên kết:
+
+```text
+Tetris-main/
+├── bin/                       # Thư mục phân phối và chạy game
+│   ├── assets/                # Tài nguyên đa phương tiện tĩnh
+│   │   ├── images/            # Chứa các phông chữ TrueType (.ttf)
+│   │   └── sounds/            # Chứa tệp nhạc nền và âm thanh sự kiện (.wav)
+│   ├── highscores.txt         # File lưu giữ top 5 điểm số kỷ lục cục bộ
+│   ├── SDL3.dll               # Thư viện liên kết động SDL3 core cho Windows
+│   ├── SDL3_image.dll         # DLL xử lý hình ảnh
+│   ├── SDL3_mixer.dll         # DLL xử lý bộ trộn âm thanh
+│   ├── SDL3_ttf.dll           # DLL xử lý phông chữ
+│   ├── libstdc++-6.dll        # Các thư viện phụ thuộc của trình biên dịch GCC
+│   ├── libwinpthread-1.dll
+│   └── main.exe               # File thực thi chính của game trên Windows
+├── include/                   # Chứa toàn bộ header files phát triển (.h) của SDL3
+├── lib/                       # Chứa thư viện liên kết tĩnh (.a) phát triển
+│   ├── x64/                   # Phiên bản 64-bit dành cho máy phát triển hiện đại
+│   └── x86/                   # Phiên bản 32-bit dành cho độ tương thích cao
+├── src/                       # Thư mục mã nguồn C++ của dự án
+│   ├── main.cpp               # Điểm vào chương trình (Entry point)
+│   ├── Game.cpp / Game.h      # Khởi tạo, xử lý vòng lặp game chính & gameplay logic
+│   ├── GameInput.cpp          # Xử lý sự kiện bàn phím/chuột và cấu hình phím rebind
+│   ├── GameState.h            # File dùng chung chứa enums trạng thái, hằng số cấu hình game
+│   ├── Board.cpp / Board.h    # Xử lý lưới chơi (10x20), kiểm tra va chạm, xóa và dồn hàng
+│   ├── Tetromino.cpp / .h     # Quản lý hình dạng các mảnh ghép, tọa độ xoay ma trận
+│   ├── Renderer.cpp / .h      # Đồ họa giao diện lưới chơi, khối gạch và giao diện UI tĩnh
+│   ├── RendererScreens.cpp    # Vẽ các phân cảnh Menu chính, Settings, Hướng dẫn, Game Over
+│   ├── AudioManager.cpp / .h  # Bộ điều khiển quản lý và phát nhạc nền/hiệu ứng âm thanh
+└── Makefile                   # Tập lệnh build tự động hóa đa kiến trúc của dự án
+```
+
+---
+
+## 💻 Yêu Cầu Hệ Thống
+
+*   **Hệ điều hành:** Windows 10 / 11 (32-bit hoặc 64-bit).
+*   **Yêu cầu runtime:** Có sẵn thư mục `bin` chứa các file DLL đi kèm (đã cấu hình đầy đủ trong bộ phân phối).
+*   **Yêu cầu biên dịch (nếu tự build từ nguồn):**
+    *   Trình biên dịch hỗ trợ C++17 trở lên (khuyên dùng **MinGW-w64 GCC**).
+    *   Công cụ quản lý **GNU Make**.
+
+---
+
+## ⚡ Hướng Dẫn Cài Đặt & Chạy Nhanh
+
+Bạn không cần cài đặt phức tạp, game đã được biên dịch sẵn và đóng gói portable hoàn chỉnh:
+
+1.  **Tải dự án về máy** và giải nén thư mục `Tetris-main`.
+2.  Mở thư mục `bin/` và kích đúp chuột trực tiếp vào file **`main.exe`** để trải nghiệm game ngay lập tức!
+3.  *Hoặc chạy nhanh bằng Command Prompt/PowerShell:*
+    ```bash
+    cd Tetris-main
+    bin/main.exe
+    ```
+
+---
+
+## 🛠️ Hướng Dẫn Build Từ Nguồn
+
+Nếu bạn muốn tùy chỉnh mã nguồn và biên dịch lại ứng dụng, hãy làm theo các bước dưới đây:
+
+### Bước 1: Chuẩn bị môi trường
+*   Cài đặt **MinGW-w64** (hoặc thông qua MSYS2) và thêm thư mục chứa `g++` và `make` vào biến môi trường **PATH** của Windows.
+*   Để kiểm tra xem trình biên dịch đã hoạt động hay chưa, chạy lệnh:
+    ```bash
+    g++ --version
+    make --version
+    ```
+
+### Bước 2: Tiến hành Biên dịch
+Makefile đi kèm dự án rất thông minh. Nó sẽ tự động phát hiện kiến trúc máy tính của bạn (64-bit hay 32-bit) để liên kết chính xác thư viện trong thư mục `lib/x64` hoặc `lib/x86`, tạo thư mục `bin/` và tự động sao chép các tệp DLL phù hợp vào thư mục đích.
+
+Mở terminal tại thư mục gốc của dự án (`Tetris-main/`) và gõ:
+```bash
+make
+```
+
+Quá trình biên dịch sẽ bắt đầu. Sau khi hoàn tất, tệp **`bin/main.exe`** mới sẽ được tạo ra sẵn sàng để khởi chạy.
+
+### Bước 3: Dọn dẹp tệp build
+Khi cần xóa bản dựng cũ để build lại sạch sẽ từ đầu, hãy chạy lệnh:
+```bash
+make clean
+```
+
+---
+
+## 🎮 Phím Điều Khiển
+
+Bảng dưới đây liệt kê cấu hình phím điều khiển mặc định ban đầu của trò chơi:
+
+| Phím Mặc Định | Hành Động Trong Game | Mô Tả |
+| :--- | :--- | :--- |
+| `⬅️ Left Arrow` | **Di chuyển Trái** | Dịch chuyển mảnh gạch sang trái 1 ô |
+| `➡️ Right Arrow`| **Di chuyển Phải** | Dịch chuyển mảnh gạch sang phải 1 ô |
+| `⬇️ Down Arrow` | **Soft Drop (Rơi nhanh)** | Mảnh gạch rơi nhanh hơn (+1 điểm/ô) |
+| `Spacebar` (Phím Cách) | **Hard Drop (Rơi tức thì)** | Mảnh gạch rơi thẳng xuống đất và khóa ngay lập tức (+2 điểm/ô) |
+| `⬆️ Up Arrow` | **Xoay thuận chiều** | Xoay mảnh ghép 90° theo chiều kim đồng hồ (CW) |
+| `Z` | **Xoay ngược chiều** | Xoay mảnh ghép 90° ngược chiều kim đồng hồ (CCW) |
+| `C` | **Giữ khối (Hold)** | Hoán đổi mảnh gạch hiện tại với mảnh trong kho lưu trữ |
+| `Esc` | **Tạm dừng / Quay lại** | Bật menu tạm dừng lúc chơi hoặc quay lại Menu trước đó |
+| `Enter` (Return) | **Chấp nhận / Bắt đầu** | Chọn nhanh màn hình Level hoặc restart từ màn hình Game Over |
+
+> [!TIP]
+> **Tùy biến phím (Key Rebinding):** Bạn có thể thay đổi toàn bộ 7 phím điều khiển gameplay trong màn hình **SETTINGS**. Chỉ cần nhấn chuột vào ô phím muốn đổi, sau đó nhấn phím mới trên bàn phím để áp dụng ngay lập tức!
+
+---
+
+## 📊 Cơ Chế Tính Điểm & Cấp Độ
+
+Hệ thống tính điểm tuân thủ các quy tắc cổ điển để tối đa hóa tính cạnh tranh khi chơi:
+
+### 1. Điểm số từ việc xóa hàng (Line Clears)
+Điểm số nhận được tăng tỷ lệ thuận với cấp độ (Level) hiện tại của bạn:
+*   **Xóa 1 hàng (Single):** $100 \times \text{Level}$
+*   **Xóa 2 hàng (Double):** $300 \times \text{Level}$
+*   **Xóa 3 hàng (Triple):** $500 \times \text{Level}$
+*   **Xóa 4 hàng (Tetris!):** $800 \times \text{Level}$
+
+### 2. Điểm rơi tự do (Drop Points)
+*   **Soft Drop:** $+1$ điểm cho mỗi ô rơi nhanh.
+*   **Hard Drop:** $+2$ điểm cho mỗi ô rơi thẳng.
+
+### 3. Tăng cấp độ (Level Up)
+*   Cấp độ sẽ tăng thêm **1 level sau mỗi 10 hàng gạch bị xóa**.
+*   Khi cấp độ tăng lên, khoảng thời gian rơi tự do (`fallInterval`) sẽ tự động giảm đi $0.1$ giây, đẩy tốc độ rơi của các khối gạch nhanh và thử thách hơn nhiều lần.
+
+---
+
+## 🧠 Chi Tiết Kỹ Thuật (SRS Wall Kick)
+
+Dự án này sở hữu thuật toán xoay khối nâng cao chuẩn **SRS (Super Rotation System)**, giải quyết triệt để tình trạng khối gạch bị kẹt khi xoay gần góc hoặc sát tường biên:
+
+```mermaid
+graph TD
+    A[Người chơi nhấn xoay mảnh gạch] --> B[Thử xoay góc chuẩn trong ma trận]
+    B --> C{Vị trí mới hợp lệ?}
+    C -- Đúng --> D[Áp dụng xoay & Phát SFX Rotate]
+    C -- Sai --> E[Lần lượt thử 4 tọa độ dịch chuyển bù trừ Wall Kicks]
+    E --> F{Có vị trí nào trống & hợp lệ?}
+    F -- Tìm thấy --> G[Tịnh tiến mảnh ghép tới tọa độ bù & Chấp nhận xoay]
+    F -- Thất bại --> H[Hủy thao tác xoay & Giữ nguyên mảnh gạch]
+```
+
+Cơ chế này áp dụng riêng biệt cho nhóm các khối `J, L, S, T, Z` và khối dài `I` với các bảng dịch chuyển (Kick Tables) chuyên biệt, đem lại trải nghiệm mượt mà, chuyên nghiệp và loại bỏ hoàn toàn các lỗi nghẽn phím khó chịu trong các bản game Tetris đơn giản khác.
+
+---
+
+## ⚠️ Xử Lý Sự Cố & Ghi Chú
+
+*   **Lỗi thiếu file DLL (`System Error: SDL3.dll was not found`):** Luôn đảm bảo rằng bạn đang chạy tệp `main.exe` nằm bên trong thư mục `bin` và không di chuyển file thực thi này ra ngoài mà không mang theo các tệp `.dll` cùng cấp.
+*   **Lỗi không tải được tài nguyên (Font, Sound):** Game yêu cầu cấu trúc thư mục chứa tài nguyên tĩnh phải đúng đường dẫn `bin/assets/images` và `bin/assets/sounds`. Vui lòng giữ nguyên cấu trúc thư mục này.
+*   **Gặp lỗi biên dịch "make: command not found":** Bạn cần kiểm tra lại cài đặt bộ công cụ phát triển C++ MinGW/MSYS2 và đảm bảo đã cài đặt trình quản lý gói `make` cũng như đã thêm các đường dẫn binary của chúng vào biến hệ thống Windows `Environment Variables`.
+
+---
+
+## 📄 Giấy Phép
+
+Dự án này được chia sẻ công khai dưới dạng mã nguồn mở phục vụ cho mục đích học tập, tham khảo phi thương mại. Bạn hoàn toàn có thể tự do phát triển thêm các tính năng độc đáo khác dựa trên mã nguồn này!
+
+Chúc các bạn có những giây phút lập trình và chơi game vui vẻ! 🎮✨

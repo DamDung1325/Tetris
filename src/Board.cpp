@@ -1,21 +1,25 @@
+/*
+ * Board.cpp
+ * ---------
+ * Triển khai Board — quản lý lưới ô đã khóa và logic xóa hàng.
+ *
+ * Sơ đồ tọa độ bảng:
+ *   col  0 1 2 ... 9          (trục X, trái→phải)
+ *   row  0                    (hàng trên cùng — game over nếu bị chiếm)
+ *        1
+ *        ...
+ *       19                    (hàng dưới cùng)
+ */
+
 #include "Board.h"
 #include "Tetromino.h"
 
-// ==========================
-// File Board.cpp
-// Nhiệm vụ: Quản lý bàn chơi Tetris.
-// Board lưu trạng thái các ô đã cố định sau khi mảnh rơi xuống.
-// Mỗi ô trong grid có thể là NONE nếu trống, hoặc là loại mảnh I/O/T/S/Z/J/L.
-// ==========================
-
-// Constructor: khi tạo Board mới thì gọi reset() để bàn chơi bắt đầu ở trạng thái trống.
+// Constructor: khởi tạo bảng trống ngay khi tạo object.
 Board::Board() {
     reset();
 }
 
-// reset(): Xóa toàn bộ bàn chơi.
-// Dùng khi bắt đầu game mới hoặc chơi lại từ đầu.
-// Tất cả ô trong grid được đưa về TetrominoType::NONE, nghĩa là ô trống.
+// Đặt toàn bộ ô về NONE (dùng đầu ván mới hoặc khi restart).
 void Board::reset() {
     for (int row = 0; row < BOARD_HEIGHT; ++row) {
         for (int col = 0; col < BOARD_WIDTH; ++col) {
@@ -24,54 +28,40 @@ void Board::reset() {
     }
 }
 
-// isInBounds(): Kiểm tra tọa độ (col, row) có nằm trong giới hạn bàn chơi không.
-// col là cột, row là hàng.
-// Hàm này giúp tránh truy cập ra ngoài mảng grid.
+// Trả về true nếu (col, row) nằm trong giới hạn bảng.
 bool Board::isInBounds(int col, int row) const {
     return col >= 0 && col < BOARD_WIDTH && row >= 0 && row < BOARD_HEIGHT;
 }
 
-// isCellEmpty(): Kiểm tra một ô trên board có trống không.
-// Nếu ô nằm ngoài board thì trả về false để không cho khối đi ra ngoài biên.
-// Nếu ô trong board và giá trị là NONE thì ô đó trống.
+// Ô ngoài biên được coi là đã chiếm để đảm bảo va chạm biên đúng.
 bool Board::isCellEmpty(int col, int row) const {
     if (!isInBounds(col, row)) {
-        return false;
+        return false; // Ngoài biên → không trống
     }
-
     return grid[row][col] == TetrominoType::NONE;
 }
 
-// getCellType(): Lấy loại mảnh đang nằm tại ô (col, row).
-// Phần Renderer có thể dùng hàm này để biết ô đó cần vẽ màu gì.
-// Nếu tọa độ không hợp lệ thì trả về NONE để tránh lỗi truy cập mảng.
+// Trả về NONE nếu tọa độ không hợp lệ để tránh truy cập mảng sai.
 TetrominoType Board::getCellType(int col, int row) const {
     if (!isInBounds(col, row)) {
         return TetrominoType::NONE;
     }
-
     return grid[row][col];
 }
 
-// lockPiece(): Cố định mảnh Tetromino hiện tại vào board.
-// Hàm này được gọi khi mảnh không thể rơi xuống nữa.
-// Cách làm:
-// 1. Duyệt ma trận 4x4 của mảnh.
-// 2. Ô nào của mảnh đang được lấp thì tính vị trí thật trên board.
-// 3. Ghi loại mảnh đó vào grid để biến nó thành khối cố định.
+// Ghi các ô của mảnh vào lưới khi mảnh chạm đất.
+// Chỉ ghi những ô nằm trong bảng (ô trên cùng đang xuất hiện có thể nằm
+// ngoài biên trên — boardRow < 0 — nên cần kiểm tra isInBounds).
 void Board::lockPiece(const Tetromino& tetromino) {
     for (int row = 0; row < TETROMINO_SIZE; ++row) {
         for (int col = 0; col < TETROMINO_SIZE; ++col) {
-            // Bỏ qua các ô trống trong ma trận 4x4 của mảnh.
             if (!tetromino.isCellFilled(col, row)) {
                 continue;
             }
 
-            // Chuyển tọa độ trong mảnh 4x4 sang tọa độ thật trên board.
             const int boardCol = tetromino.x + col;
             const int boardRow = tetromino.y + row;
 
-            // Chỉ ghi vào grid nếu vị trí nằm trong bàn chơi.
             if (isInBounds(boardCol, boardRow)) {
                 grid[boardRow][boardCol] = tetromino.getType();
             }
@@ -79,18 +69,18 @@ void Board::lockPiece(const Tetromino& tetromino) {
     }
 }
 
-// clearLines(): Kiểm tra và xóa các hàng đã đầy.
-// Một hàng được coi là đầy khi tất cả ô trong hàng đều khác NONE.
-// Sau khi xóa, các hàng phía trên sẽ được kéo xuống một dòng.
-// Hàm trả về số hàng đã xóa để Game.cpp có thể dùng tính điểm.
+// Quét từ dưới lên để xóa hàng đầy, kéo các hàng phía trên xuống.
+// Quét từ dưới lên cho phép xử lý nhiều hàng đầy liên tiếp chính xác:
+// sau khi xóa và kéo xuống, index `row` được tăng lên 1 (++row ở cuối
+// vòng lặp for sẽ cân bằng với --row ở bước kéo, nên cùng hàng đó được
+// kiểm tra lại).
 int Board::clearLines() {
     int clearedLines = 0;
 
-    // Duyệt từ dưới lên vì trong Tetris hàng dưới thường được lấp trước.
     for (int row = BOARD_HEIGHT - 1; row >= 0; --row) {
         bool fullLine = true;
 
-        // Kiểm tra xem hàng hiện tại có ô trống không.
+        // Kiểm tra hàng row có đầy không.
         for (int col = 0; col < BOARD_WIDTH; ++col) {
             if (grid[row][col] == TetrominoType::NONE) {
                 fullLine = false;
@@ -98,42 +88,64 @@ int Board::clearLines() {
             }
         }
 
-        // Nếu hàng chưa đầy thì bỏ qua.
         if (!fullLine) {
-            continue;
+            continue; // Hàng chưa đầy → bỏ qua
         }
 
         ++clearedLines;
 
-        // Kéo toàn bộ các hàng phía trên xuống một dòng.
+        // Kéo tất cả hàng phía trên xuống 1 hàng (ghi đè hàng vừa xóa).
         for (int moveRow = row; moveRow > 0; --moveRow) {
             for (int col = 0; col < BOARD_WIDTH; ++col) {
                 grid[moveRow][col] = grid[moveRow - 1][col];
             }
         }
 
-        // Sau khi kéo xuống, hàng trên cùng phải được đặt thành trống.
+        // Xóa hàng trên cùng (hàng 0) sau khi kéo xuống.
         for (int col = 0; col < BOARD_WIDTH; ++col) {
             grid[0][col] = TetrominoType::NONE;
         }
 
-        // Vì vừa kéo hàng phía trên xuống vị trí row,
-        // cần kiểm tra lại chính hàng này để không bỏ sót nếu có nhiều hàng đầy liên tiếp.
+        // Kiểm tra lại chính hàng vừa kéo xuống (có thể cũng đầy).
         ++row;
     }
 
     return clearedLines;
 }
 
-// isGameOver(): Kiểm tra điều kiện thua.
-// Nếu hàng đầu tiên đã có khối cố định thì nghĩa là các khối đã chạm tới đỉnh bàn chơi.
-// Khi đó game kết thúc.
+// Game over khi hàng trên cùng (row 0) có ít nhất một ô bị chiếm.
 bool Board::isGameOver() const {
     for (int col = 0; col < BOARD_WIDTH; ++col) {
         if (grid[0][col] != TetrominoType::NONE) {
             return true;
         }
     }
-
     return false;
+}
+
+// Trả về ID số nguyên của loại mảnh — Renderer dùng để chọn màu.
+int Board::getCellColorID(int col, int row) const {
+    return (int)getCellType(col, row);
+}
+
+// Kiểm tra mảnh có thể đặt tại vị trí tùy chỉnh (toX, toY) không.
+// Dùng trong getGhostY() và các bước kiểm tra trước khi di chuyển.
+bool Board::isValidPosition(const Tetromino& piece, int toX, int toY) const {
+    for (int row = 0; row < TETROMINO_SIZE; ++row) {
+        for (int col = 0; col < TETROMINO_SIZE; ++col) {
+            if (!piece.isCellFilled(col, row)) continue;
+
+            int boardCol = toX + col;
+            int boardRow = toY + row;
+
+            // Vượt biên trái, phải hoặc dưới → không hợp lệ.
+            if (boardCol < 0 || boardCol >= BOARD_WIDTH || boardRow >= BOARD_HEIGHT)
+                return false;
+
+            // Cho phép boardRow âm (mảnh xuất hiện một phần ở trên bảng).
+            if (boardRow >= 0 && !isCellEmpty(boardCol, boardRow))
+                return false;
+        }
+    }
+    return true;
 }
